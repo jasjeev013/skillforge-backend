@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface StudentProgressRepository  extends MongoRepository<StudentProgress, String> {
     List<StudentProgress> findAllByEnrollmentId(String enrollmentId);
+    Integer countAllByEnrollmentIdAndCourseId(String enrollmentId,String courseId);
 }

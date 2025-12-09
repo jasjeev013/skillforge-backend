@@ -1,5 +1,8 @@
 package com.skillforge.platform.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.skillforge.platform.filters.JwtAuthenticationFilter;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;
@@ -51,20 +54,23 @@ public class SecurityConfig {
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(new CustomAuthenticationEntryPoint()))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
+//                        Interview Routes
+                                .requestMatchers("/api/v0/interview/get/{enrollmentId}","/api/v0/interview/create/attempt/{studentId}/{enrollmentId}","/api/v0/interview/get/attempt/{enrollmentId}").authenticated()
 //                        Student Progress Routes
-                                .requestMatchers("/api/v0/progress/update/{enrollId}/{learningMaterialId}","api/v0/progress/get/{enrollmentId}").authenticated()
+                                .requestMatchers("/api/v0/progress/update/{enrollId}/{learningMaterialId}","/api/v0/progress/get/{enrollmentId}").authenticated()
 //                        Student Profile Routes
                                 .requestMatchers("/api/v0/student/get/{userId}","/api/v0/student/create/{userId}","/api/v0/student/edit/{studentId}").authenticated()
 //                        Student Enrollment  Routes
-                                .requestMatchers("/api/v0/enroll/create/{studentId}/{courseId}","/api/v0/enroll/get/{studentId}","/api/v0/enroll/get/courses/{studentId}").authenticated()
+                                .requestMatchers("/api/v0/enroll/create/{studentId}/{courseId}","/api/v0/enroll/get/{studentId}","/api/v0/enroll/get/courses/{studentId}","api/v0/enroll/get/courses/active/{studentId}","api/v0/enroll/get/courses/completed/{studentId}").authenticated()
 //                        Quiz Routes
-                                .requestMatchers("/api/v0/quiz/create/{topicId}","/api/v0/quiz/topic/{topicId}").authenticated()
+                                .requestMatchers("/api/v0/quiz/create/{topicId}/{instructorId}",
+                                        "/api/v0/quiz/attempt/{quizId}/{studentId}/{enrollmentId}/{courseId}","/api/v0/quiz/topic/{topicId}","/api/v0/quiz/get/{quizId}","api/v0/quiz/attempt/get/{quizId}/{studentId}","/api/v0/quiz/generate").authenticated()
 //                        Learning Material Routes
                                 .requestMatchers("/api/v0/learning/create/{topicId}","/api/v0/learning/topic/{topicId}").authenticated()
 //                        Topic Routes
                                 .requestMatchers("/api/v0/topic/get/course/{courseId}","/api/v0/topic/create/{courseId}").authenticated()
 //                        Course Routes
-                                .requestMatchers("/api/v0/course/all","/api/v0/course/all/{instructorId}","/api/v0/course/create/{instructorId}","/api/v0/course/get/{courseId}","/api/v0/course/getFull/{courseId}","/api/v0/course/setThumbnail/{courseId}").authenticated()
+                                .requestMatchers("/api/v0/course/all","/api/v0/course/all/published","/api/v0/course/all/published/{instructorId}","/api/v0/course/all/draft/{instructorId}","/api/v0/course/all/{instructorId}","/api/v0/course/create/{instructorId}","/api/v0/course/get/{courseId}","/api/v0/course/getFull/{courseId}","/api/v0/course/setThumbnail/{courseId}","/api/v0/course/publish/{courseId}").authenticated()
 //                        Instructor Routes
                                 .requestMatchers("/api/v0/instructor/get/{userId}","/api/v0/instructor/create/{userId}","/api/v0/instructor/edit/{instructorId}").authenticated()
 //                        User Routes
@@ -99,4 +105,12 @@ public class SecurityConfig {
     public RestTemplate restTemplate() {
         return new RestTemplate();
     }
+    @Bean
+    public ObjectMapper objectMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        return mapper;
+    }
+
 }

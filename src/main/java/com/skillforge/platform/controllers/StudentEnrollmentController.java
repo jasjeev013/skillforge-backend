@@ -1,5 +1,6 @@
 package com.skillforge.platform.controllers;
 
+import com.skillforge.platform.constants.enums.EnrollmentStatus;
 import com.skillforge.platform.payloads.ApiResponseObject;
 import com.skillforge.platform.services.StudentEnrollmentService;
 import lombok.AllArgsConstructor;
@@ -30,7 +31,11 @@ public class StudentEnrollmentController {
 
     @GetMapping("/get/courses/completed/{studentId}")
     public ResponseEntity<ApiResponseObject> getAllCompletedCoursesForSpecificStudent(@PathVariable String studentId){
-        return studentEnrollmentService.getCompletedCoursesForStudent(studentId);
+        return studentEnrollmentService.getCoursesForStudentByStatus(studentId, EnrollmentStatus.COMPLETED);
+    }
+    @GetMapping("/get/courses/active/{studentId}")
+    public ResponseEntity<ApiResponseObject> getAllActiveCoursesForSpecificStudent(@PathVariable String studentId){
+        return studentEnrollmentService.getCoursesForStudentByStatus(studentId, EnrollmentStatus.ACTIVE);
     }
 
 

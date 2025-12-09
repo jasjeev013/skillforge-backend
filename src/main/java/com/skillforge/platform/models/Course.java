@@ -33,7 +33,7 @@ public class Course {
     private Integer estimatedDurationHours;
 
     @Builder.Default
-    private Boolean isPublished = false;
+    private Boolean published = false;
 
     @Builder.Default
     private Boolean isFeatured = false;

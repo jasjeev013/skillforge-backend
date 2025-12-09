@@ -13,5 +13,6 @@ import java.util.Optional;
 public interface QuizRepository extends MongoRepository<Quiz, String> {
 
     List<Quiz> findAllByTopicIdOrderByCreatedAt(String topicId);
+    Integer countAllByTopicId(String  topicId);
 
 }

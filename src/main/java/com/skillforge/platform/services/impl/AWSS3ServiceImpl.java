@@ -19,6 +19,7 @@ import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignReques
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.time.Duration;
 import java.util.UUID;
 
@@ -158,6 +159,41 @@ public class AWSS3ServiceImpl implements AWSS3Service {
         );
 
         // Return presigned or public URL
+        return generatePublicUrl(key);
+    }
+    public String uploadImage(File file) throws IOException {
+        if (file == null || !file.exists() || file.length() == 0) {
+            throw new IllegalArgumentException("File cannot be null, missing, or empty");
+        }
+
+        // Extract extension
+        String name = file.getName();
+        String extension = ".jpg"; // default
+
+        if (name.contains(".")) {
+            extension = name.substring(name.lastIndexOf("."));
+        }
+
+        // Generate S3 key
+        String key = "images/" + UUID.randomUUID() + extension;
+
+        // Detect content type
+        String contentType = Files.probeContentType(file.toPath());
+        if (contentType == null) {
+            contentType = "image/jpeg";
+        }
+
+        // Upload file to S3
+        s3Client.putObject(
+                PutObjectRequest.builder()
+                        .bucket(bucketName)
+                        .key(key)
+                        .contentType(contentType)
+                        .build(),
+                RequestBody.fromFile(file)
+        );
+
+        // Return public URL
         return generatePublicUrl(key);
     }
 

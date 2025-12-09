@@ -11,4 +11,5 @@ public interface LearningMaterialRepository extends MongoRepository<LearningMate
 
     Optional<LearningMaterial> findFirstByTopicIdOrderByOrderIndexDesc(String topicId);
     List<LearningMaterial> findAllByTopicIdOrderByOrderIndex(String topicId);
+    Integer countAllByTopicId(String topicId);
 }

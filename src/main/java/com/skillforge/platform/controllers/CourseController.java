@@ -21,9 +21,23 @@ public class CourseController {
         return courseService.getAllCourses();
     }
 
+    @GetMapping("/all/published")
+    public ResponseEntity<ApiResponseObject> getAllPublishedCourses(){
+        return courseService.getAllPublishedCourses();
+    }
+
     @GetMapping("/all/{instructorId}")
     public ResponseEntity<ApiResponseObject> getAllCoursesForSpecifInstructor(@PathVariable String instructorId){
         return courseService.getAllCoursesForSpecificInstructor(instructorId);
+    }
+    @GetMapping("/all/published/{instructorId}")
+    public ResponseEntity<ApiResponseObject> getAllPublishedCoursesForSpecificInstructor(@PathVariable String instructorId){
+        return courseService.getAllPublishedCoursesForSpecificInstructor(instructorId);
+    }
+
+    @GetMapping("/all/draft/{instructorId}")
+    public ResponseEntity<ApiResponseObject> getAllDraftCoursesForSpecificInstructor(@PathVariable String instructorId){
+        return courseService.getAllDraftCoursesForSpecificInstructor(instructorId);
     }
 
     @GetMapping("/get/{courseId}")
@@ -43,6 +57,11 @@ public class CourseController {
     @PostMapping(value="/setThumbnail/{courseId}", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
     public ResponseEntity<ApiResponseObject> setThumbnailURL(@PathVariable String courseId, @RequestPart(value = "file", required = false) MultipartFile file){
         return courseService.addThumbnailPhoto(courseId,file);
+    }
+
+    @PostMapping("/publish/{courseId}")
+    public ResponseEntity<ApiResponseObject> publishCourse(@PathVariable String courseId){
+        return courseService.publishCourse(courseId);
     }
 
 

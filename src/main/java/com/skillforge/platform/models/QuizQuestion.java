@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -38,5 +39,7 @@ public class QuizQuestion {
     private Boolean isAiGenerated = false;
 
     private Map<String, Object> aiGenerationMetadata;
+
+    @CreatedDate
     private LocalDateTime createdAt;
 }

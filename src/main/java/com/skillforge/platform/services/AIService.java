@@ -1,4 +1,13 @@
 package com.skillforge.platform.services;
 
-public class AIService {
+import com.skillforge.platform.payloads.*;
+
+public interface AIService {
+    String generateImageAndStore(String prompt) throws Exception;
+    QuizResponseDto generateAIQuiz(QuizRequestDto quizRequest);
+    InterviewResponseDto generateInterviewQuestions(InterviewRequestDto interviewRequest);
+    InterviewAttemptResponseDto evaluateInterviewAttempt(InterviewAttemptRequestDto attemptRequest);
+
+
 }
+

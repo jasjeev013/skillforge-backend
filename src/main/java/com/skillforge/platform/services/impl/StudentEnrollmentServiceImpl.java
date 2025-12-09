@@ -20,7 +20,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -77,17 +79,36 @@ public class StudentEnrollmentServiceImpl implements StudentEnrollmentService {
     }
 
     @Override
-    public ResponseEntity<ApiResponseObject> getCompletedCoursesForStudent(String studentId) {
+    public ResponseEntity<ApiResponseObject> getCoursesForStudentByStatus(String studentId,EnrollmentStatus enrollmentStatus) {
         StudentProfile studentProfile = studentProfileRepository.findById(studentId)
                 .orElseThrow(() -> new RuntimeException("Student Profile not found"));
 
-        List<StudentEnrollment> studentEnrollments = studentEnrollmentRepository.findAllByStudentIdAndStatus(studentProfile.getId(), EnrollmentStatus.COMPLETED);
+        List<StudentEnrollment> studentEnrollments = studentEnrollmentRepository.findAllByStudentIdAndStatus(studentProfile.getId(),enrollmentStatus);
         List<CourseDto> courses = studentEnrollments.stream()
                 .map(enroll -> courseRepository.findById(enroll.getCourseId()))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .map(course -> modelMapper.map(course, CourseDto.class))
                 .collect(Collectors.toList());
-        return new ResponseEntity<>(new ApiResponseObject("Fetched all completed courses",true,courses),HttpStatus.OK);
+        Map<String , Object> map = new HashMap<>();
+        map.put("studentEnrollments",studentEnrollments.stream()
+                .map(studentEnrollment -> modelMapper.map(studentEnrollment,StudentEnrollmentDto.class))
+                .collect(Collectors.toList()));
+        map.put("courses",courses);
+        return new ResponseEntity<>(new ApiResponseObject("Fetched all completed courses",true,map),HttpStatus.OK);
+    }
+
+    @Override
+    public void updateCurrentProgressPercentage(String enrollmentId,double newPercentage) {
+        Optional<StudentEnrollment> studentEnrollment = studentEnrollmentRepository.findById(enrollmentId);
+        if (studentEnrollment.isPresent()){
+            StudentEnrollment studentEnrollment1 =  studentEnrollment.get();
+            studentEnrollment1.setCurrentProgressPercent(newPercentage);
+            if (newPercentage==100.0){
+                studentEnrollment1.setStatus(EnrollmentStatus.COMPLETED);
+            }
+            studentEnrollmentRepository.save(studentEnrollment1);
+
+        }
     }
 }

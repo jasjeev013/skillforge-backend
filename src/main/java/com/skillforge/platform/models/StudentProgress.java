@@ -25,6 +25,7 @@ public class StudentProgress {
     private String enrollmentId;
     private String courseId;
     private String learningMaterialId;
+    private String quizId;
     private LocalDateTime completedAt;
 
     @Builder.Default

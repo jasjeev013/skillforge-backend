@@ -18,6 +18,7 @@ public class StudentProgressDto {
     private String id;
     private String enrollmentId;
     private String courseId;
+    private String quizId;
     private String learningMaterialId;
     private LocalDateTime completedAt;
 

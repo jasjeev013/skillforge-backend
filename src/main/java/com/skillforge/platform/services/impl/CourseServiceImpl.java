@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -56,11 +57,43 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
+    public ResponseEntity<ApiResponseObject> publishCourse(String courseId) {
+        Course course= courseRepository.findById(courseId)
+                .orElseThrow(() -> new RuntimeException("Course not found"));
+
+        course.setPublished(true);
+        courseRepository.save(course);
+        return new ResponseEntity<>(new ApiResponseObject("Course Published Successfully",true,null),HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<ApiResponseObject> getAllPublishedCoursesForSpecificInstructor(String instructorId) {
+        InstructorProfile instructorProfile = instructorRepository.findById(instructorId)
+                .orElseThrow(() -> new RuntimeException("Instructor Profile not found"));
+
+        List<CourseDto> courseDtos = courseRepository.findAllByInstructorIdAndPublished(instructorProfile.getId(),true)
+                .stream().map(course -> modelMapper.map(course,CourseDto.class))
+                .collect(Collectors.toList());
+        return new ResponseEntity<>(new ApiResponseObject("Fetched all courses",true,courseDtos),HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<ApiResponseObject> getAllDraftCoursesForSpecificInstructor(String instructorId) {
+        InstructorProfile instructorProfile = instructorRepository.findById(instructorId)
+                .orElseThrow(() -> new RuntimeException("Instructor Profile not found"));
+
+        List<CourseDto> courseDtos = courseRepository.findAllByInstructorIdAndPublished(instructorProfile.getId(),false)
+                .stream().map(course -> modelMapper.map(course,CourseDto.class))
+                .collect(Collectors.toList());
+        return new ResponseEntity<>(new ApiResponseObject("Fetched all courses",true,courseDtos),HttpStatus.OK);
+    }
+
+    @Override
     public ResponseEntity<ApiResponseObject> addThumbnailPhoto(String courseId, MultipartFile multipartFile) {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new RuntimeException("Course not found"));
 
-        String url = "";
+        String url;
         try{
             url = awss3Service.uploadImage(multipartFile);
         }catch (IOException e){
@@ -69,7 +102,7 @@ public class CourseServiceImpl implements CourseService {
 
         course.setThumbnailUrl(url);
         courseRepository.save(course);
-        return new ResponseEntity<>(new ApiResponseObject("Added thumbnail image",true,null),HttpStatus.OK);
+        return new ResponseEntity<>(new ApiResponseObject("Added thumbnail image",true,url),HttpStatus.OK);
     }
 
     @Override
@@ -80,6 +113,15 @@ public class CourseServiceImpl implements CourseService {
         ).collect(Collectors.toList());
 
         return new ResponseEntity<>(new ApiResponseObject("All Courses loaded successfully",true,courseDtos),HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<ApiResponseObject> getAllPublishedCourses() {
+
+        List<CourseDto> courseDtos = courseRepository.findAllByPublished(true)
+                .stream().map(course -> modelMapper.map(course,CourseDto.class))
+                .collect(Collectors.toList());
+        return new ResponseEntity<>(new ApiResponseObject("Fetched all courses",true,courseDtos),HttpStatus.OK);
     }
 
     @Override
@@ -94,7 +136,7 @@ public class CourseServiceImpl implements CourseService {
         Course course= courseRepository.findById(courseId)
                 .orElseThrow(() -> new RuntimeException("Course not found"));
 
-        HashMap<String,Object> fullCourse = new HashMap<>();
+        Map<String,Object> fullCourse = new HashMap<>();
 
         List<Topic> topics = topicRepository.findAllByCourseIdOrderByOrderIndex(courseId);
         List<Object> fullTopics = new ArrayList<>();
@@ -126,5 +168,21 @@ public class CourseServiceImpl implements CourseService {
         ).collect(Collectors.toList());
 
         return new ResponseEntity<>(new ApiResponseObject("All Courses loaded successfully",true,courseDtos),HttpStatus.OK);
+    }
+
+    @Override
+    public int getTotalCountOfLearningMaterialAndQuizzes(String courseId) {
+        Course course= courseRepository.findById(courseId)
+                .orElseThrow(() -> new RuntimeException("Course not found"));
+        int totalCount = 0;
+        List<Topic> topics = topicRepository.findAllByCourseIdOrderByOrderIndex(course.getId());
+
+        for (Topic top:topics){
+            int learningMaterials = learningMaterialRepository.countAllByTopicId(top.getId());
+            int quizzes = quizRepository.countAllByTopicId(top.getId());
+           totalCount+= learningMaterials+quizzes;
+        }
+
+        return totalCount;
     }
 }
